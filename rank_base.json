@@ -1,0 +1,69 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {"text": "AFC Club Ranking: Malaysia vs Top Nations", "fontSize": 16},
+  "data": {"url": "AFC_ranking.csv", "format": {"type": "csv"}},
+  "transform": [
+    {"fold": ["2017", "2018", "2019", "2021", "2022", "2023/24", "2024/25", "2025/26"], "as": ["season", "points"]},
+    {"filter": "isValid(datum.points)"},
+    {"calculate": "toNumber(datum.points)", "as": "points_num"},
+    {
+      "window": [{"op": "rank", "as": "global_rank"}],
+      "sort": [{"field": "points_num", "order": "descending"}],
+      "groupby": ["season"]
+    },
+    {"filter": {"field": "Member Association", "oneOf": ["MALAYSIA", "SAUDI ARABIA", "JAPAN", "KOREA REPUBLIC", "UNITED ARAB EMIRATES", "THAILAND"]}}
+  ],
+  "layer": [
+    {
+      "mark": {"type": "line", "interpolate": "monotone"},
+      "encoding": {
+        "x": {"field": "season", "type": "ordinal", "title": "Season", "axis": {"labelAngle": -30, "titleFontSize": 14, "labelFontSize": 12}},
+        "y": {
+          "field": "global_rank",
+          "type": "quantitative",
+          "title": "Rank",
+          "scale": {"domain": [1, 24], "reverse": true},
+          "axis": {"titleFontSize": 14, "labelFontSize": 10, "grid": true, "tickMinStep": 1, "labelOverlap": false}
+        },
+        "color": {
+          "field": "Member Association",
+          "type": "nominal",
+          "scale": {
+            "domain": ["MALAYSIA", "SAUDI ARABIA", "JAPAN", "KOREA REPUBLIC", "UNITED ARAB EMIRATES", "THAILAND"],
+            "range": ["#e41a1c", "#ffcc80", "#a5d6a7", "#ce93d8", "#f4a582", "#bdc9e1"]
+          },
+          "legend": {"title": "Association", "titleFontSize": 14, "labelFontSize": 12}
+        },
+        "strokeWidth": {"condition": {"test": "datum['Member Association'] == 'MALAYSIA'", "value": 2.5}, "value": 1.2},
+        "opacity": {"value": 0.9}
+      }
+    },
+    {
+      "mark": {"type": "point", "filled": true},
+      "encoding": {
+        "x": {"field": "season", "type": "ordinal"},
+        "y": {"field": "global_rank", "type": "quantitative"},
+        "color": {
+          "field": "Member Association",
+          "type": "nominal",
+          "scale": {
+            "domain": ["MALAYSIA", "SAUDI ARABIA", "JAPAN", "KOREA REPUBLIC", "UNITED ARAB EMIRATES", "THAILAND"],
+            "range": ["#e41a1c", "#ffcc80", "#a5d6a7", "#ce93d8", "#f4a582", "#bdc9e1"]
+          },
+          "legend": null
+        },
+        "size": {"condition": {"test": "datum['Member Association'] == 'MALAYSIA'", "value": 80}, "value": 50},
+        "opacity": {"value": 0.9},
+        "tooltip": [
+          {"field": "Member Association", "title": "Association"},
+          {"field": "season", "title": "Season"},
+          {"field": "global_rank", "title": "Global Rank"},
+          {"field": "points_num", "title": "Points", "format": ".1f"}
+        ]
+      }
+    }
+  ],
+  "width": "container",
+  "height": 400,
+  "config": {"view": {"stroke": null}}
+}

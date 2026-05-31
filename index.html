@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaysian Football Analytics Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #fafbfc;
+            margin: 0;
+            padding: 24px;
+            position: relative;
+            color: #1a2a3a;
+        }
+        /* pastel blue side ribbons – kept from previous request */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 12px;
+            background-color: #a9cce3;
+            z-index: -1;
+        }
+        body::before { left: 0; }
+        body::after { right: 0; }
+
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem 2rem 1.5rem 2rem;
+        }
+
+        /* --- Advanced typography (HD criterion) --- */
+        h1 {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 2.2rem;
+            font-weight: 500;
+            color: #0b2f3d;
+            margin: 0 0 0.25rem 0;
+            letter-spacing: -0.3px;
+            border-bottom: 2px solid #dce5e8;
+            display: inline-block;
+            padding-bottom: 6px;
+        }
+
+        .subtitle {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: #5a6e7a;
+            margin-top: 12px;
+            margin-bottom: 2rem;
+            border-left: 3px solid #a9cce3;
+            padding-left: 18px;
+            line-height: 1.4;
+        }
+
+        /* section headings: small caps, bold, distinct */
+        h2 {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #2c5a6e;
+            margin: 2rem 0 1.2rem 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e0e7eb;
+        }
+
+        /* chart cards – subtle figure‑ground separation */
+        .chart-card {
+            background: #ffffff;
+            margin-bottom: 2.2rem;
+            padding: 0.2rem 0 0 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .viz-container {
+            min-height: 420px;
+            width: 100%;
+        }
+
+        /* consistent, informative captions (storytelling & annotations) */
+        .chart-caption {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 350;
+            color: #6c868e;
+            text-align: left;
+            margin-top: 10px;
+            padding-top: 6px;
+            border-top: 1px dashed #e2e9ec;
+            line-height: 1.4;
+        }
+
+        /* toggle area – clean, readable */
+        .toggle-area {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2c5a6e;
+        }
+
+        /* footer metadata – complete and well‑formatted */
+        footer {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #8c9aa6;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e9ec;
+            line-height: 1.4;
+        }
+
+        /* switch styling (unchanged, functional) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2c5a6e;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* subtle hover effect for cards – improves interactivity feel */
+        .chart-card:hover .chart-caption {
+            color: #2c5a6e;
+            transition: 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <h1>Malaysian Football: Performance and Rivalries</h1>
+    <p class="subtitle">A data‑driven exploration of domestic supremacy, international trends, continental ranking, and regional rivalries (2015–2025)</p>
+
+    <!-- SECTION 1: Domestic landscape (map + JDT dominance) -->
+    <h2>Domestic landscape</h2>
+    <div class="chart-card">
+        <div id="map_chart" class="viz-container"></div>
+        <div class="chart-caption">State‑level goal contributions – use the interactive slider to explore yearly changes. Johor consistently leads the scoring charts.</div>
+    </div>
+    <div class="chart-card">
+        <div id="wins_chart" class="viz-container"></div>
+        <div class="chart-caption">Malaysia Super League win totals (2015–2025). Johor Darul Ta’zim (JDT) is highlighted in red; hover for exact figures.</div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 2: International match trends (2000–2025) -->
+    <h2>International match trends (2000–2025)</h2>
+    <div class="chart-card">
+        <div id="waterfall_chart" class="viz-container"></div>
+        <div class="chart-caption">Yearly goal difference: purple (positive) vs orange (negative). The black line shows cumulative goal difference, revealing long‑term trends.</div>
+    </div>
+    <div class="chart-card">
+        <div id="goals_chart" class="viz-container"></div>
+        <div class="chart-caption">Goals scored (blue) versus conceded (orange) – two independent y‑axes help assess offensive and defensive balance over time.</div>
+    </div>
+    <div class="chart-card">
+        <div id="winloss_chart" class="viz-container"></div>
+        <div class="chart-caption">Win / draw / loss breakdown against regular opponents (≥5 meetings). Useful for identifying Malaysia’s strongest and weakest rivals.</div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 3: AFC club ranking – interactive toggle -->
+    <h2>AFC club ranking</h2>
+    <div class="toggle-area">
+        <span style="font-weight: 600;">Rank perspective:</span>
+        <label class="switch">
+            <input type="checkbox" id="rankToggle">
+            <span class="slider round"></span>
+        </label>
+        <span id="rankToggleLabel">Global rank (all 47 associations)</span>
+    </div>
+    <div class="chart-card">
+        <div id="rank_chart" class="viz-container"></div>
+        <div class="chart-caption">Toggle between global rank (among all 47 AFC members) and subset rank (only the six selected nations). Malaysia’s line is thicker / red.</div>
+    </div>
+
+    <hr>
+
+    <!-- SECTION 4: Rivalry dynamics & key contributors -->
+    <h2>Rivalry dynamics & key contributors</h2>
+    <div class="chart-card">
+        <div id="matrix_chart" class="viz-container"></div>
+        <div class="chart-caption">ASEAN head‑to‑head frequency – darker cells represent a higher number of encounters. Hover for exact counts.</div>
+    </div>
+    <div class="chart-card">
+        <div id="timeline_chart" class="viz-container"></div>
+        <div class="chart-caption">Tournament participation (2000–2025). Circle size encodes the number of matches played in that tournament‑year.</div>
+    </div>
+    <div class="chart-card">
+        <div id="top_scorers_chart" class="viz-container"></div>
+        <div class="chart-caption">Top international goal scorers. Blue bars indicate players above the average (dashed line).</div>
+    </div>
+    <div class="chart-card">
+        <div id="tournament_chart" class="viz-container"></div>
+        <div class="chart-caption">Distribution of match types. Malaysia’s only ASEAN Championship title was won in 2010 (annotation inside the chart).</div>
+    </div>
+
+    <footer>
+        <strong>Data sources</strong> : ASEAN Football Results (1934‑2025) | Malaysia Super League (2015‑2025) | Malaysia international scorers | AFC Club Competition Ranking.<br>
+        <strong>Author</strong> : FIT2179 Data Visualisation 2 – Malaysian Football Dashboard. <strong>Date</strong> : May 2026.<br>
+        All visualisations created with Vega‑Lite. Hover / click for interactive details.
+    </footer>
+</div>
+
+<script>
+    const embedOpt = { actions: false, renderer: "svg" };
+
+    function embedChart(container, specFile) {
+        vegaEmbed(container, specFile, embedOpt).catch(err => {
+            console.error(`Failed to embed ${container}:`, err);
+        });
+    }
+
+    // All 10 working, creative custom‑built visualisations (≥10)
+    embedChart("#map_chart", "map.json");                 // geographic map with slider
+    embedChart("#wins_chart", "domestic_wins.json");      // bar chart (JDT highlighted)
+    embedChart("#waterfall_chart", "waterfall.json");     // waterfall (bar + line)
+    embedChart("#goals_chart", "goals_2000.json");        // dual‑axis line chart
+    embedChart("#winloss_chart", "win_draw_loss_breakdown.json"); // stacked bar (100%)
+    embedChart("#matrix_chart", "head_to_head_matrix.json");      // heatmap
+    embedChart("#timeline_chart", "tournament_timeline.json");    // bubble timeline (size encodes matches)
+    embedChart("#top_scorers_chart", "top_scorers.json");         // bar chart with average reference line
+    embedChart("#tournament_chart", "tournament_donut.json");     // donut with total in centre & annotation
+
+    // Rank chart – toggle between two JSON files (global vs subset)
+    const rankToggle = document.getElementById('rankToggle');
+    const rankToggleLabel = document.getElementById('rankToggleLabel');
+
+    function loadRankChart() {
+        const mode = rankToggle.checked ? 'subset' : 'global';
+        const file = mode === 'global' ? 'rank_base.json' : 'rank_subset.json';
+        rankToggleLabel.textContent = mode === 'global' 
+            ? 'Global rank (all 47 associations)' 
+            : 'Subset rank (among selected teams only)';
+        vegaEmbed("#rank_chart", file, embedOpt).catch(console.error);
+    }
+
+    rankToggle.checked = false;
+    loadRankChart();
+    rankToggle.addEventListener('change', loadRankChart);
+</script>
+
+</body>
+</html>

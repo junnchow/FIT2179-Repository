@@ -1,0 +1,37 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {"text": "Malaysia's Yearly Goal Difference (2000–2025)", "fontSize": 16},
+  "data": {"url": "asean_results.csv", "format": {"type": "csv"}},
+  "transform": [
+    {"filter": "datum.home_team == 'Malaysia' || datum.away_team == 'Malaysia'"},
+    {"calculate": "toNumber(substring(datum.date, 0, 4))", "as": "year"},
+    {"filter": "datum.year >= 2000"},
+    {"calculate": "datum.home_team == 'Malaysia' ? datum.home_score - datum.away_score : datum.away_score - datum.home_score", "as": "gd"},
+    {"aggregate": [{"op": "sum", "field": "gd", "as": "yearly_gd"}], "groupby": ["year"]}
+  ],
+  "layer": [
+    {
+      "mark": {"type": "bar", "stroke": "white", "strokeWidth": 1},
+      "encoding": {
+        "x": {"field": "year", "type": "ordinal", "title": "Year", "axis": {"titleFontSize": 14, "labelFontSize": 12, "labelAngle": -45}},
+        "y": {"field": "yearly_gd", "type": "quantitative", "title": "Goal Difference", "axis": {"titleFontSize": 14, "labelFontSize": 12}},
+        "color": {
+          "condition": {"test": "datum.yearly_gd >= 0", "value": "#9467bd"},
+          "value": "#ff7f0e"
+        },
+        "tooltip": [{"field": "year"}, {"field": "yearly_gd", "title": "Goal Difference"}]
+      }
+    },
+    {
+      "mark": {"type": "line", "color": "#000000", "strokeWidth": 2, "point": {"filled": true, "size": 50, "color": "#000000"}},
+      "encoding": {
+        "x": {"field": "year", "type": "ordinal"},
+        "y": {"aggregate": "sum", "field": "yearly_gd", "type": "quantitative", "title": "Cumulative Goal Difference"},
+        "tooltip": [{"field": "year"}, {"aggregate": "sum", "field": "yearly_gd", "title": "Cumulative"}]
+      }
+    }
+  ],
+  "width": "container", "height": 400,
+  "resolve": {"scale": {"y": "independent"}},
+  "config": {"view": {"stroke": null}}
+}

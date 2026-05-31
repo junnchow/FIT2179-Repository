@@ -1,0 +1,85 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "Malaysia's International Matches by Tournament Type",
+    "subtitle": "Malaysia won the AFF Championship (now ASEAN Championship) once, in 2010.",
+    "fontSize": 16,
+    "subtitleFontSize": 11,
+    "subtitleColor": "#555"
+  },
+  "data": {"url": "asean_results.csv", "format": {"type": "csv"}},
+  "width": 600,
+  "height": 450,
+  "transform": [
+    {"filter": "datum.home_team == 'Malaysia' || datum.away_team == 'Malaysia'"},
+    {"calculate": "datum.tournament == 'AFF Championship' ? 'ASEAN Championship' : datum.tournament", "as": "tournament"},
+    {"aggregate": [{"op": "count", "as": "matches"}], "groupby": ["tournament"]},
+    {"filter": "datum.matches > 5"}
+  ],
+  "layer": [
+    {
+      "mark": {"type": "arc", "innerRadius": 80, "stroke": "#fff"},
+      "encoding": {
+        "theta": {"field": "matches", "type": "quantitative", "stack": "normalize"},
+        "color": {
+          "field": "tournament",
+          "type": "nominal",
+          "sort": {"field": "matches", "order": "ascending"},
+          "scale": {"scheme": "blues"},
+          "legend": {"title": "Tournament", "titleFontSize": 14, "labelFontSize": 11, "orient": "left"}
+        },
+        "tooltip": [{"field": "tournament"}, {"field": "matches", "title": "Matches played"}]
+      }
+    },
+    {
+      "mark": {"type": "text", "align": "center", "baseline": "middle", "fontSize": 28, "fontWeight": "bold", "color": "#333"},
+      "encoding": {
+        "text": {"aggregate": "sum", "field": "matches", "type": "quantitative"},
+        "x": {"value": 300},
+        "y": {"value": 220}
+      }
+    },
+    {
+      "mark": {"type": "text", "align": "center", "baseline": "middle", "fontSize": 14, "color": "#666", "dy": 25},
+      "encoding": {
+        "text": {"value": "Total Matches"},
+        "x": {"value": 300},
+        "y": {"value": 220}
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "top",
+        "fontSize": 12,
+        "fontWeight": "normal",
+        "color": "black"
+      },
+      "encoding": {
+        "text": {"value": "Malaysia won the AFF Championship (now ASEAN Championship) once,"},
+        "x": {"value": 520},
+        "y": {"value": 50}
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "align": "left",
+        "baseline": "top",
+        "fontSize": 12,
+        "fontWeight": "normal",
+        "color": "black"
+      },
+      "encoding": {
+        "text": {"value": "claiming the title in 2010."},
+        "x": {"value": 520},
+        "y": {"value": 65}
+      }
+    }
+  ],
+  "config": {
+    "view": {"stroke": null},
+    "legend": {"labelColor": "black"}
+  }
+}

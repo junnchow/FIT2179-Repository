@@ -1,0 +1,54 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {"text": "Malaysia's Tournament Participation (2000–2025)", "fontSize": 16},
+  "data": {"url": "asean_results.csv", "format": {"type": "csv"}},
+  "transform": [
+    {"filter": "datum.home_team == 'Malaysia' || datum.away_team == 'Malaysia'"},
+    {"calculate": "toNumber(substring(datum.date, 0, 4))", "as": "year"},
+    {"filter": "datum.year >= 2000 && datum.year <= 2025"},
+    {"calculate": "datum.tournament == 'AFF Championship' ? 'ASEAN Championship' : datum.tournament", "as": "tournament"},
+    {"aggregate": [{"op": "count", "as": "matches"}], "groupby": ["tournament", "year"]},
+    {"joinaggregate": [{"op": "sum", "field": "matches", "as": "total_matches"}], "groupby": ["tournament"]}
+  ],
+  "mark": {"type": "circle", "opacity": 0.8, "filled": true},
+  "encoding": {
+    "x": {
+      "field": "year", 
+      "type": "quantitative", 
+      "title": "Year", 
+      "scale": {"domain": [2000, 2025]},
+      "axis": {"titleFontSize": 14, "labelFontSize": 12, "format": "d", "tickCount": 10}
+    },
+    "y": {
+      "field": "tournament", 
+      "type": "nominal", 
+      "title": "Tournament", 
+      "axis": {"titleFontSize": 14, "labelFontSize": 12},
+      "sort": {"field": "total_matches", "order": "ascending"}
+    },
+    "color": {
+      "field": "tournament", 
+      "type": "nominal", 
+      "scale": {
+        "domain": ["ASEAN Championship", "Friendly", "AFC Asian Cup qualification", "FIFA World Cup qualification", "Merdeka Tournament", "Southeast Asian Games"],
+        "range": ["#084594", "#2171b5", "#4292c6", "#6baed6", "#9ecae1", "#c6dbef"]
+      },
+      "legend": {"title": "Tournament", "titleFontSize": 12, "labelFontSize": 10, "orient": "right"}
+    },
+    "size": {
+      "field": "matches", 
+      "type": "quantitative", 
+      "title": "Matches played", 
+      "legend": {"titleFontSize": 12, "labelFontSize": 10, "orient": "right"},
+      "scale": {"range": [100, 500]}
+    },
+    "tooltip": [
+      {"field": "tournament", "title": "Tournament"},
+      {"field": "year", "title": "Year"},
+      {"field": "matches", "title": "Matches Played"}
+    ]
+  },
+  "width": "container",
+  "height": 400,
+  "config": {"view": {"stroke": null}}
+}

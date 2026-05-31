@@ -1,0 +1,36 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {"text": "Malaysia's Total Goals Scored and Conceded (2000–2025)", "fontSize": 16},
+  "data": {"url": "asean_results.csv", "format": {"type": "csv"}},
+  "transform": [
+    {"filter": "datum.home_team == 'Malaysia' || datum.away_team == 'Malaysia'"},
+    {"calculate": "year(datum.date)", "as": "year"},
+    {"filter": "isValid(datum.year) && datum.year >= 2000"},
+    {"calculate": "datum.home_team == 'Malaysia' ? datum.home_score : datum.away_score", "as": "goals_for"},
+    {"calculate": "datum.home_team == 'Malaysia' ? datum.away_score : datum.home_score", "as": "goals_against"},
+    {"aggregate": [{"op": "sum", "field": "goals_for", "as": "total_for"}, {"op": "sum", "field": "goals_against", "as": "total_against"}], "groupby": ["year"]}
+  ],
+  "encoding": {
+    "x": {"field": "year", "type": "ordinal", "title": "Year", "axis": {"titleFontSize": 14, "labelFontSize": 12, "labelAngle": -45, "tickCount": 10}}
+  },
+  "layer": [
+    {
+      "mark": {"type": "line", "point": {"filled": true, "size": 50, "color": "#1f77b4"}, "strokeWidth": 2.5, "color": "#1f77b4"},
+      "encoding": {
+        "y": {"field": "total_for", "type": "quantitative", "title": "Goals Scored", "axis": {"titleFontSize": 14, "labelFontSize": 12, "titleColor": "#1f77b4"}},
+        "tooltip": [{"field": "year"}, {"field": "total_for", "title": "Goals Scored"}]
+      }
+    },
+    {
+      "mark": {"type": "line", "point": {"filled": true, "size": 50, "color": "#ff7f0e"}, "strokeWidth": 2.5, "color": "#ff7f0e"},
+      "encoding": {
+        "y": {"field": "total_against", "type": "quantitative", "title": "Goals Conceded", "axis": {"titleFontSize": 14, "labelFontSize": 12, "titleColor": "#ff7f0e"}},
+        "tooltip": [{"field": "year"}, {"field": "total_against", "title": "Goals Conceded"}]
+      }
+    }
+  ],
+  "resolve": {"scale": {"y": "independent"}},
+  "width": "container",
+  "height": 400,
+  "config": {"view": {"stroke": null}}
+}
